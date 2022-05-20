@@ -1,4 +1,5 @@
 from django.db import models
+from pytils.translit import slugify
 
 
 # Abstract class User
@@ -22,11 +23,16 @@ class Article(models.Model):
     content = models.TextField()
     author = models.ManyToManyField('author')
     created_at = models.DateTimeField(auto_now_add=True)
-    views = models.IntegerField()
+    views = models.IntegerField(default=0)
     category = models.ForeignKey('category', on_delete=models.PROTECT)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        super(Article, self).save(*args, **kwargs)
+        self.slug = f'{self.pk}-{slugify(self.title)}'
+        super(Article, self).save(*args, **kwargs)
 
     class Mate:
         verbose_name = 'Article'
@@ -37,6 +43,11 @@ class Article(models.Model):
 class Author(User):
     position = models.CharField(max_length=250)
     organization = models.ForeignKey('organization', on_delete=models.PROTECT)
+
+    def save(self, *args, **kwargs):
+        super(Author, self).save(*args, **kwargs)
+        self.slug = f'{self.pk}-{slugify(self.name)}-{slugify(self.surname)}'
+        super(Author, self).save(*args, **kwargs)
 
     class Mate:
         verbose_name = 'Author'
@@ -51,6 +62,11 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        super(Category, self).save(*args, **kwargs)
+        self.slug = f'{self.pk}-{slugify(self.title)}'
+        super(Category, self).save(*args, **kwargs)
+
     class Mate:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
@@ -64,6 +80,11 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        super(Organization, self).save(*args, **kwargs)
+        self.slug = f'{self.pk}-{slugify(self.title)}'
+        super(Organization, self).save(*args, **kwargs)
 
     class Mate:
         verbose_name = 'Organization'
